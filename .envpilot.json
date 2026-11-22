@@ -1,0 +1,12 @@
+{
+  "rootDir": ".",
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.git/**",
+    "**/.fixtures/**"
+  ],
+  "strict": false
+}

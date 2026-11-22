@@ -1,0 +1,39 @@
+{
+  "name": "demo-envpilot",
+  "version": "1.0.0",
+  "description": "Demonstration project for the envpilot-dev environment configuration auditor",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "env:check": "envpilot check --strict",
+    "env:report": "envpilot report --out envpilot-report.json",
+    "env:json": "envpilot check --json",
+    "env:demo-missing": "envpilot check --dir .fixtures/missing-variable",
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aryan118335/Demo-envpilot.git"
+  },
+  "keywords": [
+    "envpilot",
+    "environment-variables",
+    "ast",
+    "auditor",
+    "static-analysis",
+    "demo"
+  ],
+  "author": "aryan118335",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aryan118335/Demo-envpilot/issues"
+  },
+  "homepage": "https://github.com/aryan118335/Demo-envpilot#readme",
+  "devDependencies": {
+    "envpilot-dev": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
