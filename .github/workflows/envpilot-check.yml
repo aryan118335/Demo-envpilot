@@ -1,0 +1,52 @@
+name: EnvPilot CI Audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Run EnvPilot Strict Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run EnvPilot strict audit on clean demo project
+        run: npm run env:check
+
+      - name: Verify fixture failure mode (expected missing variable)
+        run: |
+          echo "Auditing intentional missing-variable fixture..."
+          if npx envpilot check --dir .fixtures/missing-variable --strict; then
+            echo "Error: Expected fixture audit to fail in strict mode, but it passed!"
+            exit 1
+          else
+            echo "Success: Fixture audit correctly failed strict mode due to missing DATABASE_URL"
+          fi
+
+      - name: Generate EnvPilot JSON report artifact
+        run: npm run env:report
+
+      - name: Run native test suite
+        run: npm test
+
+      - name: Upload EnvPilot Audit Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: envpilot-audit-report
+          path: envpilot-report.json
+          if-no-files-found: error
