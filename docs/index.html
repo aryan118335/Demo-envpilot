@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnvPilot Demo — Environment Configuration Auditor</title>
+  <meta name="description" content="Live demonstration of envpilot-dev: Developer-first AST environment configuration auditor for JavaScript & TypeScript projects.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0f1d;
+      --bg-secondary: #10182b;
+      --bg-card: #15203b;
+      --bg-code: #0b1120;
+      --border-color: #233354;
+      --border-focus: #3b82f6;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-accent: #38bdf8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-yellow: #f59e0b;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 0;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-accent);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      border-color: var(--border-color);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--text-muted);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 72px 0 48px;
+      text-align: center;
+    }
+
+    .hero-badge-wrap {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .hero-badge strong {
+      color: var(--text-main);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 20%, #a78bfa 70%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Install Banner */
+    .install-box {
+      margin: 40px auto;
+      max-width: 600px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: #93c5fd;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 680px;
+    }
+
+    /* Terminal Simulation */
+    .terminal-section {
+      padding: 48px 0;
+    }
+
+    .terminal-window {
+      background: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .terminal-header {
+      background: #0f172a;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .terminal-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .terminal-tabs {
+      display: flex;
+      gap: 4px;
+      background: #0a0f1d;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-card);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .terminal-body {
+      padding: 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      min-height: 280px;
+    }
+
+    .term-prompt {
+      color: var(--accent-green);
+    }
+
+    .term-cmd {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .term-box {
+      color: #60a5fa;
+    }
+
+    .term-success {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .term-warn {
+      color: var(--accent-yellow);
+      font-weight: 600;
+    }
+
+    .term-err {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    /* Comparison Grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .card pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin: 40px 0;
+    }
+
+    .feature-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .feature-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-focus);
+    }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .feature-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .feature-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Notice Banner */
+    .notice-banner {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin: 32px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .notice-icon {
+      font-size: 1.4rem;
+      color: var(--accent-blue);
+      flex-shrink: 0;
+    }
+
+    .notice-content {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    .notice-content strong {
+      color: #fff;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 48px 0 32px;
+      margin-top: 64px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-accent);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 48px 0 32px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .terminal-body {
+        font-size: 0.8rem;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="#" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        EnvPilot Demo
+        <span class="brand-badge">v1.0.0</span>
+      </a>
+      <div class="nav-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#interactive-demo">Live CLI Outputs</a>
+        <a href="#code-contract">Code Contract</a>
+        <a href="#security">Security</a>
+        <a href="#ci-cd">GitHub Actions CI</a>
+        <a href="https://www.npmjs.com/package/envpilot-dev" target="_blank" rel="noopener" class="btn btn-outline">npm package</a>
+        <a href="https://github.com/aryan118335/Demo-envpilot" target="_blank" rel="noopener" class="btn btn-primary">GitHub Demo</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-badge-wrap">
+        <a href="https://www.npmjs.com/package/envpilot-dev" target="_blank" rel="noopener" class="hero-badge">
+          <span>📦 npm:</span>
+          <strong>envpilot-dev@1.0.0</strong>
+        </a>
+        <a href="https://github.com/aryan118335/Demo-envpilot/actions/workflows/envpilot-check.yml" target="_blank" rel="noopener" class="hero-badge">
+          <span>🚦 CI Status:</span>
+          <strong style="color: #10b981;">Passing</strong>
+        </a>
+        <span class="hero-badge">
+          <span>🛡️ Mode:</span>
+          <strong>AST Static Analysis</strong>
+        </span>
+      </div>
+
+      <h1>
+        Zero-Drift Environment Auditing with <br>
+        <span class="gradient-text">EnvPilot</span>
+      </h1>
+
+      <p class="hero-sub">
+        Detect missing, unused, and inconsistent environment variables before deployment.
+        Powered by the official TypeScript compiler AST parser — eliminate runtime crashes and broken onboarding.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://github.com/aryan118335/Demo-envpilot" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          Demo Project GitHub Repo
+        </a>
+        <a href="https://github.com/aryan118335/envpilot" target="_blank" rel="noopener" class="btn btn-outline">
+          Original EnvPilot Source
+        </a>
+        <a href="https://www.npmjs.com/package/envpilot-dev" target="_blank" rel="noopener" class="btn btn-outline">
+          View on npm
+        </a>
+      </div>
+
+      <!-- Quick Install Box -->
+      <div class="install-box">
+        <code>npm install --save-dev envpilot-dev@1.0.0</code>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install --save-dev envpilot-dev@1.0.0'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000)">Copy</button>
+      </div>
+    </section>
+
+    <!-- Architecture Notice -->
+    <div class="notice-banner">
+      <div class="notice-icon">💡</div>
+      <div class="notice-content">
+        <strong>Academic & Architecture Note:</strong>
+        This static web showcase is hosted on GitHub Pages from <code>docs/</code>. The real <strong>EnvPilot CLI binary</strong> is installed via npm as <code>envpilot-dev@1.0.0</code> and executes in this project's local Node.js environment and automated GitHub Actions CI workflow (<code>envpilot-check.yml</code>).
+      </div>
+    </div>
+
+    <!-- Features Overview -->
+    <section id="how-it-works" style="padding: 24px 0;">
+      <h2 class="section-title">What EnvPilot Detects</h2>
+      <p class="section-desc">
+        Environment variables bridge configuration and code. EnvPilot statically inspects code and environment templates to catch 3 critical failure classes:
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">❌</div>
+          <h3 class="feature-title">Missing in .env / Template</h3>
+          <p class="feature-desc">
+            Code references <code>process.env.DATABASE_URL</code>, but nobody documented it in <code>.env.example</code> or added it to deployment secrets. Catches fatal runtime crashes before production.
+          </p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">⚠️</div>
+          <h3 class="feature-title">Unused / Dead Declarations</h3>
+          <p class="feature-desc">
+            Variables lingering in <code>.env</code> files from legacy refactors. Clean up obsolete configuration and prevent credentials from remaining in templates.
+          </p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">🔁</div>
+          <h3 class="feature-title">Duplicate Key Overwrites</h3>
+          <p class="feature-desc">
+            Detects duplicate variable keys defined across multi-line <code>.env</code> files that silently overwrite each other depending on parser order.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Terminal Showcase -->
+    <section id="interactive-demo" class="terminal-section">
+      <h2 class="section-title">Actual CLI Execution Output</h2>
+      <p class="section-desc">
+        Inspect the real terminal output produced by <code>envpilot</code> in different project scenarios:
+      </p>
+
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="terminal-title">bash — envpilot-dev@1.0.0</div>
+          <div></div>
+        </div>
+
+        <div class="terminal-tabs">
+          <button class="tab-btn active" onclick="switchTab('clean')">Clean Demo Project (Passing)</button>
+          <button class="tab-btn" onclick="switchTab('broken')">Broken Fixture (Missing Var)</button>
+          <button class="tab-btn" onclick="switchTab('json')">JSON Report Output</button>
+        </div>
+
+        <div class="terminal-body" id="term-content">
+          <!-- Populated by JavaScript below -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Side-by-side Code Contract Comparison -->
+    <section id="code-contract" style="padding: 24px 0;">
+      <h2 class="section-title">The Code Contract</h2>
+      <p class="section-desc">
+        How this demo repository pairs real executable JavaScript code in <code>src/server.js</code> with <code>.env.example</code>:
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📄 src/server.js (Node.js ES Module)</span>
+            <span style="font-size: 0.8rem; color: #38bdf8;">Static AST Scanned</span>
+          </div>
+          <pre><code>import http from "node:http";
+
+// EnvPilot AST parser extracts identifiers:
+const PORT = Number.parseInt(process.env.PORT || "3000", 10);
+const APP_NAME = process.env.APP_NAME || "EnvPilot Demo Service";
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({
+    app: APP_NAME,
+    environment: NODE_ENV,
+    port: PORT,
+    status: "verified"
+  }));
+});
+
+export default server;</code></pre>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 .env.example (Safe Template)</span>
+            <span style="font-size: 0.8rem; color: #10b981;">Template Contract</span>
+          </div>
+          <pre><code># EnvPilot Demo Application - Environment Configuration
+#
+# EnvPilot statically audits JavaScript/TypeScript AST to ensure
+# all variables referenced via process.env match this file.
+# Values here are safe placeholder defaults for development.
+
+PORT=3000
+APP_NAME=EnvPilot Demo Service
+NODE_ENV=development</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security Guarantee Section -->
+    <section id="security" style="padding: 24px 0;">
+      <h2 class="section-title">Security & Zero Secret Exposure</h2>
+      <p class="section-desc">
+        Designed from the ground up for safe use in untrusted CI pipelines and shared workspaces:
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Keys Only, Never Values</h3>
+          <p class="feature-desc">
+            EnvPilot parses only variable <strong>names / identifiers</strong>. Actual runtime values (passwords, JWT secrets, database connection strings) are never evaluated, read, logged, or exported.
+          </p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">🌐</div>
+          <h3 class="feature-title">100% Offline & Local</h3>
+          <p class="feature-desc">
+            No telemetry, no external HTTP requests, and no phone-home servers. All AST parsing and file comparison occurs purely on the local filesystem.
+          </p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon">📖</div>
+          <h3 class="feature-title">Strictly Read-Only</h3>
+          <p class="feature-desc">
+            EnvPilot will never alter or overwrite your project's <code>.env</code> or source files. It is an auditor, not an invasive modifier.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CI/CD GitHub Actions Section -->
+    <section id="ci-cd" style="padding: 24px 0;">
+      <h2 class="section-title">Automated GitHub Actions CI</h2>
+      <p class="section-desc">
+        Every push to <code>main</code> runs the strict auditor. If any code references an undocumented variable, CI fails immediately before code can be merged or deployed.
+      </p>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⚙️ .github/workflows/envpilot-check.yml</span>
+          <a href="https://github.com/aryan118335/Demo-envpilot/actions" target="_blank" rel="noopener" style="color: #38bdf8; font-size: 0.85rem; text-decoration: none;">View Workflows &rarr;</a>
+        </div>
+        <pre><code>name: EnvPilot CI Audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - run: npm ci
+      - name: Run EnvPilot strict audit
+        run: npm run env:check
+      - name: Generate JSON report
+        run: npm run env:report</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div>
+        <strong>EnvPilot Demo Project</strong> — Academic & Developer Showcase
+        <div style="font-size: 0.8rem; margin-top: 4px; color: var(--text-muted);">
+          Published package: <code>envpilot-dev@1.0.0</code> | MIT License
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.npmjs.com/package/envpilot-dev" target="_blank" rel="noopener">npm Package</a>
+        <a href="https://github.com/aryan118335/envpilot" target="_blank" rel="noopener">Original Package Source</a>
+        <a href="https://github.com/aryan118335/Demo-envpilot" target="_blank" rel="noopener">Demo Repository</a>
+        <a href="https://github.com/aryan118335/Demo-envpilot/actions" target="_blank" rel="noopener">CI Workflows</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const scenarios = {
+      clean: `
+<span class="term-prompt">user@host:~/Demo-envpilot$</span> <span class="term-cmd">npx envpilot check --strict</span>
+
+<span class="term-box">╔══════════════════════════════════╗</span>
+<span class="term-box">║       EnvPilot — Scan Report      ║</span>
+<span class="term-box">╚══════════════════════════════════╝</span>
+
+📁 <span class="term-cmd">Project</span> : /Users/aryan/Desktop/Demo-envpilot
+🔍 <span class="term-cmd">Used</span>    : APP_NAME, NODE_ENV, PORT
+📋 <span class="term-cmd">Declared</span>: APP_NAME, NODE_ENV, PORT
+❌ <span class="term-cmd">Missing</span> : (none)
+⚠️  <span class="term-cmd">Unused</span>  : (none)
+🔁 <span class="term-cmd">Dupes</span>   : (none)
+
+<span class="term-success">✅ No issues found.</span>
+<span class="term-prompt">user@host:~/Demo-envpilot$</span> <span class="term-cmd">echo $?</span>
+0
+`,
+      broken: `
+<span class="term-prompt">user@host:~/Demo-envpilot$</span> <span class="term-cmd">npx envpilot check --dir .fixtures/missing-variable</span>
+
+<span class="term-box">╔══════════════════════════════════╗</span>
+<span class="term-box">║       EnvPilot — Scan Report      ║</span>
+<span class="term-box">╚══════════════════════════════════╝</span>
+
+📁 <span class="term-cmd">Project</span> : /Users/aryan/Desktop/Demo-envpilot/.fixtures/missing-variable
+🔍 <span class="term-cmd">Used</span>    : DATABASE_URL, PORT
+📋 <span class="term-cmd">Declared</span>: PORT
+❌ <span class="term-err">Missing : DATABASE_URL</span>
+⚠️  <span class="term-cmd">Unused</span>  : (none)
+🔁 <span class="term-cmd">Dupes</span>   : (none)
+
+<span class="term-warn">⚠️  Issues detected.</span>
+<span class="term-prompt">user@host:~/Demo-envpilot$</span> <span class="term-cmd">npx envpilot check --dir .fixtures/missing-variable --strict</span>
+Strict mode failures: 1 missing
+<span class="term-err">[Exit code 1]</span>
+`,
+      json: `
+<span class="term-prompt">user@host:~/Demo-envpilot$</span> <span class="term-cmd">npx envpilot check --json</span>
+{
+  <span style="color: #93c5fd;">"used"</span>: [
+    <span style="color: #a7f3d0;">"APP_NAME"</span>,
+    <span style="color: #a7f3d0;">"NODE_ENV"</span>,
+    <span style="color: #a7f3d0;">"PORT"</span>
+  ],
+  <span style="color: #93c5fd;">"declared"</span>: [
+    <span style="color: #a7f3d0;">"APP_NAME"</span>,
+    <span style="color: #a7f3d0;">"NODE_ENV"</span>,
+    <span style="color: #a7f3d0;">"PORT"</span>
+  ],
+  <span style="color: #93c5fd;">"missingInEnv"</span>: [],
+  <span style="color: #93c5fd;">"unusedInEnv"</span>: [],
+  <span style="color: #93c5fd;">"duplicates"</span>: []
+}
+`
+    };
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b =>
+        b.getAttribute('onclick').includes(name)
+      );
+      if (activeBtn) activeBtn.classList.add('active');
+      document.getElementById('term-content').innerHTML = scenarios[name].trim();
+    }
+
+    // Initialize default tab
+    switchTab('clean');
+  </script>
+</body>
+</html>
